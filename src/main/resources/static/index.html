@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream Journal Logger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        textarea, input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        textarea:focus, input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .mood-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .mood-option {
+            padding: 12px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 24px;
+        }
+
+        .mood-option:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .mood-option.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .sleep-quality {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .star {
+            font-size: 30px;
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.3s;
+        }
+
+        .star.active {
+            color: #ffd700;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .dream-list {
+            display: grid;
+            gap: 20px;
+        }
+
+        .dream-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            position: relative;
+        }
+
+        .dream-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .dream-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .dream-meta span {
+            background: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .dream-text {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .dream-tags {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background: #cc0000;
+        }
+
+        #wordCloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .word-item {
+            display: inline-block;
+            padding: 8px 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            transition: transform 0.3s;
+            cursor: default;
+        }
+
+        .word-item:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .theme-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .theme-bar {
+            height: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🌙 Dream Journal Logger</h1>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('new')">New Dream</button>
+        <button class="tab-btn" onclick="showTab('list')">My Dreams</button>
+        <button class="tab-btn" onclick="showTab('analytics')">Analytics</button>
+    </div>
+
+    <!-- New Dream Tab -->
+    <div id="new" class="tab-content active">
+        <form id="dreamForm">
+            <div class="form-group">
+                <label>Dream Description</label>
+                <textarea id="dreamText" placeholder="Describe your dream in detail..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Mood</label>
+                <div class="mood-selector">
+                    <div class="mood-option" data-mood="happy" title="Happy">😊</div>
+                    <div class="mood-option" data-mood="excited" title="Excited">🤩</div>
+                    <div class="mood-option" data-mood="peaceful" title="Peaceful">😌</div>
+                    <div class="mood-option" data-mood="scared" title="Scared">😰</div>
+                    <div class="mood-option" data-mood="sad" title="Sad">😢</div>
+                    <div class="mood-option" data-mood="confused" title="Confused">😵</div>
+                    <div class="mood-option" data-mood="neutral" title="Neutral">😐</div>
+                    <div class="mood-option" data-mood="weird" title="Weird">🤔</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Sleep Quality</label>
+                <div class="sleep-quality" id="sleepQuality">
+                    <span class="star" data-value="1">⭐</span>
+                    <span class="star" data-value="2">⭐</span>
+                    <span class="star" data-value="3">⭐</span>
+                    <span class="star" data-value="4">⭐</span>
+                    <span class="star" data-value="5">⭐</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="lucidDream">
+                    <label for="lucidDream" style="margin: 0;">This was a lucid dream</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Tags (comma-separated themes)</label>
+                <input type="text" id="tags" placeholder="e.g., flying, water, family, adventure">
+            </div>
+
+            <button type="submit" class="btn">Save Dream</button>
+        </form>
+    </div>
+
+    <!-- Dream List Tab -->
+    <div id="list" class="tab-content">
+        <div id="dreamList" class="dream-list"></div>
+    </div>
+
+    <!-- Analytics Tab -->
+    <div id="analytics" class="tab-content">
+        <div class="stats" id="statsContainer"></div>
+
+        <h2 style="margin-top: 30px; margin-bottom: 15px; color: #667eea;">Word Cloud</h2>
+        <div id="wordCloud"></div>
+
+        <h2 style="margin-top: 30px; margin-bottom: 15px; color: #667eea;">Recurring Themes</h2>
+        <div id="themeList" class="theme-list"></div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8080/api/dreams';
+    let selectedMood = '';
+    let selectedQuality = 0;
+
+    // Mood selector
+    document.querySelectorAll('.mood-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.mood-option').forEach(o => o.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedMood = this.dataset.mood;
+        });
+    });
+
+    // Sleep quality stars
+    document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('click', function() {
+            selectedQuality = parseInt(this.dataset.value);
+            updateStars();
+        });
+    });
+
+    function updateStars() {
+        document.querySelectorAll('.star').forEach(star => {
+            if (parseInt(star.dataset.value) <= selectedQuality) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
+
+    // Tab switching
+    function showTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+        event.target.classList.add('active');
+        document.getElementById(tabName).classList.add('active');
+
+        if (tabName === 'list') {
+            loadDreams();
+        } else if (tabName === 'analytics') {
+            loadAnalytics();
+        }
+    }
+
+    // Form submission
+    document.getElementById('dreamForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const dream = {
+            dreamText: document.getElementById('dreamText').value,
+            mood: selectedMood,
+            lucidDream: document.getElementById('lucidDream').checked,
+            sleepQuality: selectedQuality,
+            tags: document.getElementById('tags').value
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dream)
+            });
+
+            if (response.ok) {
+                alert('Dream saved successfully!');
+                document.getElementById('dreamForm').reset();
+                selectedMood = '';
+                selectedQuality = 0;
+                document.querySelectorAll('.mood-option').forEach(o => o.classList.remove('selected'));
+                updateStars();
+            } else {
+                alert('Failed to save dream');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error connecting to server. Make sure the backend is running on port 8080.');
+        }
+    });
+
+    // Load dreams
+    async function loadDreams() {
+        try {
+            const response = await fetch(API_URL);
+            const dreams = await response.json();
+
+            const listDiv = document.getElementById('dreamList');
+
+            if (dreams.length === 0) {
+                listDiv.innerHTML = '<p style="text-align: center; color: #666;">No dreams recorded yet. Start logging your dreams!</p>';
+                return;
+            }
+
+            listDiv.innerHTML = dreams.map(dream => `
+                <div class="dream-card">
+                    <button class="delete-btn" onclick="deleteDream(${dream.id})">Delete</button>
+                    <h3>${new Date(dream.date).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    })}</h3>
+                    <div class="dream-meta">
+                        <span>Mood: ${dream.mood || 'N/A'}</span>
+                        <span>Sleep: ${'⭐'.repeat(dream.sleepQuality || 0)}</span>
+                        ${dream.lucidDream ? '<span>💫 Lucid Dream</span>' : ''}
+                    </div>
+                    <p class="dream-text">${dream.dreamText}</p>
+                    ${dream.tags ? `<div class="dream-tags">
+                        ${dream.tags.split(',').map(tag =>
+                            `<span class="tag">${tag.trim()}</span>`
+                        ).join('')}
+                    </div>` : ''}
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('dreamList').innerHTML =
+                '<p style="text-align: center; color: #ff4444;">Error loading dreams. Make sure the backend is running.</p>';
+        }
+    }
+
+    // Delete dream
+    async function deleteDream(id) {
+        if (confirm('Are you sure you want to delete this dream?')) {
+            try {
+                await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                loadDreams();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error deleting dream');
+            }
+        }
+    }
+
+    // Load analytics
+    async function loadAnalytics() {
+        try {
+            const [dreams, wordCloud, themes] = await Promise.all([
+                fetch(API_URL).then(r => r.json()),
+                fetch(`${API_URL}/word-cloud`).then(r => r.json()),
+                fetch(`${API_URL}/themes`).then(r => r.json())
+            ]);
+
+            // Stats
+            const lucidCount = dreams.filter(d => d.lucidDream).length;
+            const avgSleep = dreams.reduce((sum, d) => sum + (d.sleepQuality || 0), 0) / dreams.length;
+
+            document.getElementById('statsContainer').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${dreams.length}</div>
+                    <div class="stat-label">Total Dreams</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${lucidCount}</div>
+                    <div class="stat-label">Lucid Dreams</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${avgSleep.toFixed(1)}</div>
+                    <div class="stat-label">Avg Sleep Quality</div>
+                </div>
+            `;
+
+            // Word cloud
+            const cloudDiv = document.getElementById('wordCloud');
+            cloudDiv.innerHTML = Object.entries(wordCloud)
+                .map(([word, count]) => {
+                    const size = Math.min(12 + count * 3, 32);
+                    return `<span class="word-item" style="font-size: ${size}px">${word} (${count})</span>`;
+                }).join('');
+
+            // Themes
+            const maxThemeCount = Math.max(...Object.values(themes));
+            const themeDiv = document.getElementById('themeList');
+            themeDiv.innerHTML = Object.entries(themes)
+                .map(([theme, count]) => `
+                    <div class="theme-item">
+                        <span style="font-weight: 600; flex: 0 0 150px">${theme}</span>
+                        <div style="flex: 1; background: #e0e0e0; border-radius: 10px; margin: 0 10px;">
+                            <div class="theme-bar" style="width: ${(count / maxThemeCount) * 100}%"></div>
+                        </div>
+                        <span style="font-weight: bold; color: #667eea;">${count}</span>
+                    </div>
+                `).join('');
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+</script>
+</body>
+</html>
